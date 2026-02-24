@@ -27,6 +27,14 @@ export default async function handler(req, res) {
   "categoria": "una delle categorie suggerite nel prompt",
   "rarita": "Comune, Raro o Molto raro",
   "descrizione": "breve descrizione sintetica dell'oggetto (max 200 caratteri)"
+}
+
+Esempio:
+{
+  "valore_euro": "15–25",
+  "categoria": "Abbigliamento e Accessori",
+  "rarita": "Raro",
+  "descrizione": "Vestito etnico moderno con motivi tradizionali, ideale per eventi culturali."
 }`
           },
           {
@@ -43,10 +51,20 @@ export default async function handler(req, res) {
     const raw = data.choices?.[0]?.message?.content;
 
     if (!raw) {
-      return res.status(500).json({ error: 'Risposta AI vuota o non valida' });
+      console.error('Risposta AI vuota');
+      return res.status(500).json({ error: 'Risposta AI vuota' });
     }
 
-    const valutazione = JSON.parse(raw);
+    console.log('RISPOSTA GREZZA:', raw);
+
+    // Estrai il blocco JSON dalla risposta
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) {
+      console.error('JSON non trovato nella risposta AI');
+      return res.status(500).json({ error: 'JSON non trovato nella risposta AI' });
+    }
+
+    const valutazione = JSON.parse(match[0]);
     return res.status(200).json(valutazione);
   } catch (error) {
     console.error('Errore nella valutazione AI:', error);
